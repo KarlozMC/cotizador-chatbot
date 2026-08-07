@@ -12,6 +12,7 @@ import {
   saveMessage,
   updateConversation,
 } from "../services/conversationSupabaseService.js";
+import { buildInternalLeadSummary } from "../services/internalSummaryService.js";
 
 let context = createInitialContext();
 const conversationId = await createConversation();
@@ -73,6 +74,18 @@ rl.on("line", async (input: string) => {
     const leadId = await saveLeadToSupabase(context.lead);
     console.log(`Prospecto guardado en Supabase con ID: ${leadId}`);
     console.log("");
+
+    const internalSummary = buildInternalLeadSummary(context.lead);
+    console.log("Resumen interno para seguimiento:");
+    console.log(internalSummary);
+    console.log("");
+
+    await saveMessage({
+      conversationId,
+      sender: "sistema",
+      messageText: internalSummary,
+      messageType: "system",
+    });
 
     await updateConversation({
       conversationId,
