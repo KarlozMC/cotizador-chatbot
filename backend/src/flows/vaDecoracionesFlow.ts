@@ -3,7 +3,8 @@ import { findFaqAnswer } from "../services/faqService.js";
 import type { ConversationContext, ConversationState } from "../types/chatbot.js";
 
 const nextStateMap: Record<ConversationState, ConversationState> = {
-  inicio: "esperando_tipo_evento",
+  inicio: "esperando_nombre",
+  esperando_nombre: "esperando_tipo_evento",
   esperando_tipo_evento: "esperando_tipo_decoracion",
   esperando_tipo_decoracion: "esperando_fecha",
   esperando_fecha: "esperando_zona",
@@ -63,6 +64,9 @@ function getFlowResponse(context: ConversationContext): string {
     case "inicio":
       return `Hola, bienvenido a ${vaDecoracionesConfig.businessName}. Te ayudo a cotizar tu decoracion con globos. Para darte una mejor opcion, te hare unas preguntas rapidas.`;
 
+    case "esperando_nombre":
+      return "Para iniciar, ¿me puedes compartir tu nombre?";
+
     case "esperando_tipo_evento":
       return "¿Que tipo de evento estas organizando? Puede ser cumpleaños, baby shower, bautizo, XV años, boda, graduacion, evento empresarial, evento escolar u otro.";
 
@@ -103,6 +107,10 @@ function getFlowResponse(context: ConversationContext): string {
 
 function captureLeadData(context: ConversationContext, message: string): void {
   switch (context.state) {
+    case "esperando_nombre":
+      context.lead.customerName = message;
+      break;
+
     case "esperando_tipo_evento":
       context.lead.eventType = message;
       break;

@@ -1,5 +1,6 @@
 export type ConversationState =
   | "inicio"
+  | "esperando_nombre"
   | "esperando_tipo_evento"
   | "esperando_tipo_decoracion"
   | "esperando_fecha"
