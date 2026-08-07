@@ -35,6 +35,8 @@ export interface LeadDraft {
   quoteCategory?: QuoteCategory;
   requiresTransport?: boolean;
   notes?: string;
+  isUrgent?: boolean;
+  daysUntilEvent?: number | null;
 }
 
 export interface ConversationContext {

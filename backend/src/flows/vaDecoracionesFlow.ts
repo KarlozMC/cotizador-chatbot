@@ -1,6 +1,7 @@
 import { vaDecoracionesConfig } from "../config/vaDecoraciones.js";
 import { findFaqAnswer } from "../services/faqService.js";
 import type { ConversationContext, ConversationState } from "../types/chatbot.js";
+import { getDaysUntilEvent, isUrgentEvent } from "../services/eventUrgencyService.js";
 
 const nextStateMap: Record<ConversationState, ConversationState> = {
   inicio: "esperando_nombre",
@@ -121,6 +122,8 @@ function captureLeadData(context: ConversationContext, message: string): void {
 
     case "esperando_fecha":
       context.lead.eventDate = message;
+      context.lead.daysUntilEvent = getDaysUntilEvent(message);
+      context.lead.isUrgent = isUrgentEvent(message);
       break;
 
     case "esperando_zona":
@@ -204,6 +207,8 @@ function buildLeadSummary(context: ConversationContext): string {
     "",
     `Evento: ${lead.eventType ?? "No indicado"}`,
     `Fecha: ${lead.eventDate ?? "No indicada"}`,
+    `Dias para el evento: ${lead.daysUntilEvent ?? "No calculado"}`,
+    `Evento urgente: ${lead.isUrgent ? "Si" : "No"}`,
     `Zona: ${lead.eventZone ?? "No indicada"}`,
     `Lugar: ${lead.eventPlace ?? "No indicado"}`,
     `Decoracion: ${lead.decorationType ?? "No indicada"}`,
