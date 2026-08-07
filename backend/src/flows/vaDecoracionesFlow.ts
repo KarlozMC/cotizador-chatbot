@@ -96,6 +96,10 @@ function getFlowResponse(context: ConversationContext): string {
       return buildLeadSummary(context);
 
     case "requiere_humano":
+      if (context.lead.isUrgent) {
+        return "Gracias, ya tenemos la informacion principal. Como tu evento es en una fecha proxima, en breve revisaran disponibilidad, materiales y logistica para confirmar si es posible realizar el montaje.";
+      }
+
       return "Gracias, ya tenemos la informacion principal. En breve revisaran tu cotizacion y te atenderan para darte mas detalle sobre precio, disponibilidad y logistica.";
 
     case "cerrado":
