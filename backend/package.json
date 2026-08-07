@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx src/simulator/index.ts",
     "api": "tsx src/server.ts",
+    "api:scenario": "tsx src/simulator/apiScenarioClient.ts",
     "scenario": "tsx src/simulator/runScenario.ts",
     "scenario:normal": "tsx src/simulator/runScenario.ts normal",
     "scenario:urgente": "tsx src/simulator/runScenario.ts urgente",
