@@ -15,5 +15,9 @@
     "@types/node": "^26.1.2",
     "tsx": "^4.23.10",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.2",
+    "dotenv": "^17.4.2"
   }
 }

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import * as readline from "node:readline";
 import {
   createInitialContext,
@@ -29,7 +30,7 @@ rl.on("line", async (input: string) => {
   console.log("");
   console.log(`Bot: ${getBotResponse(context)}`);
   console.log("");
-  
+
   if (context.state === "requiere_humano") {
   const filePath = await saveLeadToJson(context.lead);
   console.log(`Ficha del prospecto guardada en: ${filePath}`);
