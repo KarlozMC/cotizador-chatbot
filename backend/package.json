@@ -5,6 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx src/simulator/index.ts",
+    "scenario": "tsx src/simulator/runScenario.ts",
+    "scenario:normal": "tsx src/simulator/runScenario.ts normal",
+    "scenario:urgente": "tsx src/simulator/runScenario.ts urgente",
+    "scenario:fuera": "tsx src/simulator/runScenario.ts fuera_escobedo",
+    "scenario:grande": "tsx src/simulator/runScenario.ts grande_personalizada",
     "build": "tsc",
     "start": "node dist/simulator/index.js"
   },
