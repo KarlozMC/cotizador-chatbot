@@ -39,4 +39,5 @@ export interface LeadDraft {
 export interface ConversationContext {
   state: ConversationState;
   lead: LeadDraft;
+  lastFaqAnswer?: string;
 }

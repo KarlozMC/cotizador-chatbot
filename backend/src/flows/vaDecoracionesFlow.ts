@@ -1,4 +1,5 @@
 import { vaDecoracionesConfig } from "../config/vaDecoraciones.js";
+import { findFaqAnswer } from "../services/faqService.js";
 import type { ConversationContext, ConversationState } from "../types/chatbot.js";
 
 const nextStateMap: Record<ConversationState, ConversationState> = {
@@ -30,9 +31,11 @@ export function handleMessage(
   message: string
 ): ConversationContext {
   const normalizedMessage = message.trim();
+  const faqAnswer = findFaqAnswer(normalizedMessage);
 
   const updatedContext: ConversationContext = {
     ...context,
+    lastFaqAnswer: faqAnswer ?? undefined,
     lead: {
       ...context.lead,
     },
@@ -46,6 +49,16 @@ export function handleMessage(
 }
 
 export function getBotResponse(context: ConversationContext): string {
+  const flowResponse = getFlowResponse(context);
+
+  if (context.lastFaqAnswer) {
+    return `${context.lastFaqAnswer}\n\n${flowResponse}`;
+  }
+
+  return flowResponse;
+}
+
+function getFlowResponse(context: ConversationContext): string {
   switch (context.state) {
     case "inicio":
       return `Hola, bienvenido a ${vaDecoracionesConfig.businessName}. Te ayudo a cotizar tu decoracion con globos. Para darte una mejor opcion, te hare unas preguntas rapidas.`;
