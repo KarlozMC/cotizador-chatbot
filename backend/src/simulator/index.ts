@@ -5,14 +5,12 @@ import {
   getBotResponse,
   handleMessage,
 } from "../flows/vaDecoracionesFlow.js";
-import { saveLeadToJson } from "../services/leadStorageService.js";
-import { saveLeadToSupabase } from "../services/leadSupabaseService.js";
 import {
   createConversation,
   saveMessage,
   updateConversation,
 } from "../services/conversationSupabaseService.js";
-import { buildInternalLeadSummary } from "../services/internalSummaryService.js";
+import { finalizeConversation } from "../services/conversationFinalizerService.js";
 
 let context = createInitialContext();
 const conversationId = await createConversation();
@@ -67,31 +65,16 @@ rl.on("line", async (input: string) => {
     status: context.state === "requiere_humano" ? "requiere_humano" : "activa",
   });
 
-  if (context.state === "requiere_humano") {
-    const filePath = await saveLeadToJson(context.lead);
-    console.log(`Ficha local guardada en: ${filePath}`);
+  if (context.state === "resumen_cotizacion") {
+    const result = await finalizeConversation({
+      conversationId,
+      context,
+    });
 
-    const leadId = await saveLeadToSupabase(context.lead);
-    console.log(`Prospecto guardado en Supabase con ID: ${leadId}`);
-    console.log("");
-
-    const internalSummary = buildInternalLeadSummary(context.lead);
+    console.log(`Ficha local guardada en: ${result.localFilePath}`);
+    console.log(`Prospecto guardado en Supabase con ID: ${result.leadId}`);
     console.log("Resumen interno para seguimiento:");
-    console.log(internalSummary);
+    console.log(result.internalSummary);
     console.log("");
-
-    await saveMessage({
-      conversationId,
-      sender: "sistema",
-      messageText: internalSummary,
-      messageType: "system",
-    });
-
-    await updateConversation({
-      conversationId,
-      leadId,
-      currentState: context.state,
-      status: "requiere_humano",
-    });
   }
 });
