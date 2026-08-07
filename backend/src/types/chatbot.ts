@@ -37,6 +37,7 @@ export interface LeadDraft {
   notes?: string;
   isUrgent?: boolean;
   daysUntilEvent?: number | null;
+  internalSummary?: string;
 }
 
 export interface ConversationContext {

@@ -27,6 +27,7 @@ export async function saveLeadToSupabase(lead: LeadDraft): Promise<string> {
       notes: lead.notes,
       is_urgent: lead.isUrgent ?? false,
       days_until_event: lead.daysUntilEvent,
+      internal_summary: lead.internalSummary,
     })
     .select("id")
     .single();
