@@ -1,6 +1,7 @@
 import { supabase } from "./supabaseClient.js";
 import type { LeadDraft } from "../types/chatbot.js";
 import { getBusinessId } from "./conversationSupabaseService.js";
+import { parseEventDate } from "./dateParserService.js";
 
 export async function saveLeadToSupabase(lead: LeadDraft): Promise<string> {
   const businessId = await getBusinessId();
@@ -45,13 +46,5 @@ function normalizeBudget(value?: string): number | null {
 }
 
 function normalizeEventDate(value?: string): string | null {
-  if (!value) return null;
-
-  // Por ahora solo guardamos fechas claras tipo 2026-09-20.
-  // Si el cliente escribe "20 de septiembre", lo dejamos null hasta agregar parser.
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return value;
-  }
-
-  return null;
+  return parseEventDate(value);
 }
