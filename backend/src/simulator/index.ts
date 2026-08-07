@@ -13,6 +13,7 @@ import {
 import { finalizeConversation } from "../services/conversationFinalizerService.js";
 
 let context = createInitialContext();
+let conversationFinalized = false;
 const conversationId = await createConversation();
 
 const rl = readline.createInterface({
@@ -36,6 +37,13 @@ rl.on("line", async (input: string) => {
   if (input.toLowerCase() === "salir") {
     console.log("Simulador finalizado.");
     rl.close();
+    return;
+  }
+
+  if (conversationFinalized) {
+    console.log("");
+    console.log("Esta conversacion ya fue registrada. Escribe salir para terminar el simulador.");
+    console.log("");
     return;
   }
 
@@ -76,5 +84,7 @@ rl.on("line", async (input: string) => {
     console.log("Resumen interno para seguimiento:");
     console.log(result.internalSummary);
     console.log("");
+
+    conversationFinalized = true;
   }
 });
