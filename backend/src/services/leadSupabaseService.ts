@@ -1,7 +1,6 @@
 import { supabase } from "./supabaseClient.js";
 import type { LeadDraft } from "../types/chatbot.js";
-
-const BUSINESS_NAME = "VA Decoraciones";
+import { getBusinessId } from "./conversationSupabaseService.js";
 
 export async function saveLeadToSupabase(lead: LeadDraft): Promise<string> {
   const businessId = await getBusinessId();
@@ -30,20 +29,6 @@ export async function saveLeadToSupabase(lead: LeadDraft): Promise<string> {
 
   if (error) {
     throw new Error(`Error saving lead to Supabase: ${error.message}`);
-  }
-
-  return data.id;
-}
-
-async function getBusinessId(): Promise<string> {
-  const { data, error } = await supabase
-    .from("businesses")
-    .select("id")
-    .eq("name", BUSINESS_NAME)
-    .single();
-
-  if (error) {
-    throw new Error(`Error finding business: ${error.message}`);
   }
 
   return data.id;
