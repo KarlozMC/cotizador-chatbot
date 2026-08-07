@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx src/simulator/index.ts",
+    "api": "tsx src/server.ts",
     "scenario": "tsx src/simulator/runScenario.ts",
     "scenario:normal": "tsx src/simulator/runScenario.ts normal",
     "scenario:urgente": "tsx src/simulator/runScenario.ts urgente",
@@ -17,12 +18,16 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^26.1.2",
     "tsx": "^4.23.10",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.2",
-    "dotenv": "^17.4.2"
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
   }
 }
