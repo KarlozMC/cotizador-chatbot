@@ -6,6 +6,7 @@ import {
   handleMessage,
 } from "../flows/vaDecoracionesFlow.js";
 import { saveLeadToJson } from "../services/leadStorageService.js";
+import { saveLeadToSupabase } from "../services/leadSupabaseService.js";
 
 let context = createInitialContext();
 
@@ -33,7 +34,10 @@ rl.on("line", async (input: string) => {
 
   if (context.state === "requiere_humano") {
   const filePath = await saveLeadToJson(context.lead);
-  console.log(`Ficha del prospecto guardada en: ${filePath}`);
+  console.log(`Ficha local guardada en: ${filePath}`);
+
+  const leadId = await saveLeadToSupabase(context.lead);
+  console.log(`Prospecto guardado en Supabase con ID: ${leadId}`);
   console.log("");
 }
 });
