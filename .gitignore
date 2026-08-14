@@ -146,3 +146,7 @@ backend/node_modules/
 backend/dist/
 backend/data/
 backend/.env
+
+frontend-panel/.env.local
+frontend-panel/node_modules/
+frontend-panel/.next/
