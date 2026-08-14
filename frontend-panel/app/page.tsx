@@ -2,11 +2,21 @@ import { supabase } from "@/lib/supabase";
 import type { Lead } from "@/types/lead";
 import Link from "next/link";
 
-async function getLeads(): Promise<Lead[]> {
-  const { data, error } = await supabase
+async function getLeads(filter: string): Promise<Lead[]> {
+  let query = supabase
     .from("leads")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (filter === "urgent") {
+    query = query.eq("is_urgent", true);
+  }
+
+  if (["listo_para_revision", "cotizado", "apartado"].includes(filter)) {
+    query = query.eq("status", filter);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -15,8 +25,24 @@ async function getLeads(): Promise<Lead[]> {
   return data ?? [];
 }
 
-export default async function Home() {
-  const leads = await getLeads();
+const filters = [
+  { label: "Todos", value: "all" },
+  { label: "Urgentes", value: "urgent" },
+  { label: "Listos para revisión", value: "listo_para_revision" },
+  { label: "Cotizados", value: "cotizado" },
+  { label: "Apartados", value: "apartado" },
+];
+
+interface HomeProps {
+  searchParams?: Promise<{
+    filter?: string;
+  }>;
+}
+
+export default async function Home({ searchParams }: HomeProps) {
+  const params = searchParams ? await searchParams : {};
+  const filter = params.filter ?? "all";
+  const leads = await getLeads(filter);
 
   return (
     <main className="min-h-screen bg-slate-100 px-6 py-8">
@@ -28,6 +54,27 @@ export default async function Home() {
           <p className="mt-1 text-sm text-slate-600">
             Solicitudes capturadas por el chatbot para revisión y seguimiento.
           </p>
+        </div>
+
+        <div className="mb-4 flex flex-wrap gap-2">
+          {filters.map((item) => {
+            const href = item.value === "all" ? "/" : `/?filter=${item.value}`;
+            const isActive = filter === item.value;
+
+            return (
+              <Link
+                key={item.value}
+                href={href}
+                className={
+                  isActive
+                    ? "rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white"
+                    : "rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                }
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </div>
 
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
