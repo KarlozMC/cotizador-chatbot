@@ -87,10 +87,14 @@ app.post("/webhooks/whatsapp", async (req, res) => {
         leadId: result.leadId,
       });
 
-      await sendWhatsappTextMessage({
-        to: message.from,
-        text: result.reply,
-      });
+      try {
+        await sendWhatsappTextMessage({
+          to: message.from,
+          text: result.reply,
+        });
+      } catch (error) {
+        console.error("No se pudo enviar respuesta por WhatsApp:", error);
+      }
     }
 
     return res.sendStatus(200);
