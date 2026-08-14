@@ -13,6 +13,10 @@ import {
 } from "./services/conversationSupabaseService.js";
 import { finalizeConversation } from "./services/conversationFinalizerService.js";
 import type { ConversationContext } from "./types/chatbot.js";
+import {
+  extractWhatsappMessages,
+  verifyWhatsappWebhook,
+} from "./services/whatsappWebhookService.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -127,6 +131,44 @@ app.post("/messages", async (req, res) => {
     return res.status(500).json({
       error: "Internal server error",
     });
+  }
+});
+
+app.get("/webhooks/whatsapp", (req, res) => {
+  try {
+    const challenge = verifyWhatsappWebhook({
+      mode: String(req.query["hub.mode"] ?? ""),
+      token: String(req.query["hub.verify_token"] ?? ""),
+      challenge: String(req.query["hub.challenge"] ?? ""),
+    });
+
+    if (!challenge) {
+      return res.sendStatus(403);
+    }
+
+    return res.status(200).send(challenge);
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(500);
+  }
+});
+
+app.post("/webhooks/whatsapp", async (req, res) => {
+  try {
+    const messages = extractWhatsappMessages(req.body);
+
+    for (const message of messages) {
+      console.log("Mensaje WhatsApp recibido:", {
+        from: message.from,
+        messageId: message.messageId,
+        text: message.text,
+      });
+    }
+
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(500);
   }
 });
 
