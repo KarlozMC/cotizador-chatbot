@@ -6,6 +6,7 @@ import {
   verifyWhatsappWebhook,
 } from "./services/whatsappWebhookService.js";
 import { processIncomingMessage } from "./services/chatSessionService.js";
+import { sendWhatsappTextMessage } from "./services/whatsappSenderService.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -87,6 +88,11 @@ app.post("/webhooks/whatsapp", async (req, res) => {
         state: result.state,
         finalized: result.finalized,
         leadId: result.leadId,
+      });
+
+      await sendWhatsappTextMessage({
+        to: message.from,
+        text: result.reply,
       });
     }
 
