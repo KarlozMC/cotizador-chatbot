@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Lead } from "@/types/lead";
+import { updateLeadStatus } from "./actions";
 
 interface LeadDetailPageProps {
   params: Promise<{
@@ -98,6 +99,37 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+          <section className="mb-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-base font-semibold text-slate-900">
+              Seguimiento
+            </h2>
+
+            <form action={updateLeadStatus} className="mt-4 flex flex-wrap gap-3">
+              <input type="hidden" name="leadId" value={lead.id} />
+
+              <select
+                name="status"
+                defaultValue={lead.status}
+                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+              >
+                <option value="nuevo">Nuevo</option>
+                <option value="recopilando_datos">Recopilando datos</option>
+                <option value="listo_para_revision">Listo para revisión</option>
+                <option value="cotizado">Cotizado</option>
+                <option value="apartado">Apartado</option>
+                <option value="perdido">Perdido</option>
+                <option value="cerrado">Cerrado</option>
+              </select>
+
+              <button
+                type="submit"
+                className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+              >
+                Guardar estado
+              </button>
+            </form>
+          </section>
+          
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-base font-semibold text-slate-900">
               Datos del evento
