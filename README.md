@@ -186,3 +186,10 @@ El proyecto debe avanzar por etapas:
 4. Conectar WhatsApp Cloud API.
 5. Crear panel básico.
 6. Convertir el sistema en plantilla reutilizable para otros negocios.
+
+## Integración Meta WhatsApp
+
+La guía de configuración de Meta, ngrok y WhatsApp Cloud API está en:
+
+```text
+docs/meta-whatsapp-setup.md
