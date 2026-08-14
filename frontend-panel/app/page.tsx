@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { Lead } from "@/types/lead";
+import Link from "next/link";
 
 async function getLeads(): Promise<Lead[]> {
   const { data, error } = await supabase
@@ -64,8 +65,10 @@ export default async function Home() {
               <tbody className="divide-y divide-slate-200 bg-white">
                 {leads.map((lead) => (
                   <tr key={lead.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-sm text-slate-900">
-                      {lead.customer_name ?? "Sin nombre"}
+                    <td className="px-4 py-3 text-sm font-medium text-slate-900">
+                      <Link href={`/prospectos/${lead.id}`} className="hover:underline">
+                        {lead.customer_name ?? "Sin nombre"}
+                      </Link>
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-700">
                       {lead.event_type ?? "-"}
