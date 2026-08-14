@@ -1,10 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import {
-  extractWhatsappMessages,
-  verifyWhatsappWebhook,
-} from "./services/whatsappWebhookService.js";
+import { extractWhatsappMessages, verifyWhatsappWebhook, } from "./services/whatsappWebhookService.js";
 import { processIncomingMessage } from "./services/chatSessionService.js";
 import { sendWhatsappTextMessage } from "./services/whatsappSenderService.js";
 
