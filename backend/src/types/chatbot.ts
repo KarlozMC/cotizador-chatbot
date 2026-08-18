@@ -23,6 +23,8 @@ export type QuoteCategory =
 
 export interface LeadDraft {
   customerName?: string;
+  customerPhone?: string;
+  channel?: "manual" | "whatsapp" | "facebook" | "instagram" | "web";
   eventType?: string;
   eventDate?: string;
   eventZone?: string;

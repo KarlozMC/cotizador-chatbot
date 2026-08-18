@@ -35,6 +35,11 @@ export async function processIncomingMessage(params: {
   if (!session) {
     const conversationId = await createConversation();
     const context = createInitialContext();
+
+    context.lead.channel = params.channel;
+    if (params.channel === "whatsapp") {
+      context.lead.customerPhone = params.sessionId.replace("whatsapp:", "");
+    }
     const initialBotResponse = getBotResponse(context);
 
     await saveMessage({

@@ -137,6 +137,8 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
 
             <dl className="mt-3">
               <DetailRow label="Cliente" value={lead.customer_name} />
+              <DetailRow label="Teléfono" value={lead.customer_phone} />
+              <DetailRow label="Canal" value={lead.channel} />
               <DetailRow label="Evento" value={lead.event_type} />
               <DetailRow label="Fecha" value={lead.event_date} />
               <DetailRow

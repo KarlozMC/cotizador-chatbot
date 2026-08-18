@@ -1,6 +1,8 @@
 export interface Lead {
   id: string;
+  channel: string;
   customer_name: string | null;
+  customer_phone: string | null;
   event_type: string | null;
   event_date: string | null;
   event_zone: string | null;
