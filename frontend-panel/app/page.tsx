@@ -1,8 +1,13 @@
 import { supabase } from "@/lib/supabase";
 import type { Lead } from "@/types/lead";
 import Link from "next/link";
+import {
+  formatDate,
+  formatQuoteCategory,
+  formatStatus,
+} from "@/lib/formatters";
 
-async function getLeads(filter: string): Promise<Lead[]> {
+async function getLeads(filter: string, searchQuery: string): Promise<Lead[]> {
   let query = supabase
     .from("leads")
     .select("*")
@@ -14,6 +19,18 @@ async function getLeads(filter: string): Promise<Lead[]> {
 
   if (["listo_para_revision", "cotizado", "apartado"].includes(filter)) {
     query = query.eq("status", filter);
+  }
+
+  if (searchQuery) {
+    query = query.or(
+      [
+        `customer_name.ilike.%${searchQuery}%`,
+        `customer_phone.ilike.%${searchQuery}%`,
+        `event_type.ilike.%${searchQuery}%`,
+        `event_zone.ilike.%${searchQuery}%`,
+        `decoration_type.ilike.%${searchQuery}%`,
+      ].join(",")
+    );
   }
 
   const { data, error } = await query;
@@ -56,14 +73,17 @@ const filters = [
 interface HomeProps {
   searchParams?: Promise<{
     filter?: string;
+    q?: string;
   }>;
 }
 
 export default async function Home({ searchParams }: HomeProps) {
   const params = searchParams ? await searchParams : {};
   const filter = params.filter ?? "all";
+  const query = params.q?.trim() ?? "";
+
   const [leads, stats] = await Promise.all([
-    getLeads(filter),
+    getLeads(filter, query),
     getLeadStats(),
   ]);
 
@@ -108,9 +128,43 @@ export default async function Home({ searchParams }: HomeProps) {
           </div>
         </div>
 
+        <form className="mb-4 flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:flex-row">
+          <input type="hidden" name="filter" value={filter === "all" ? "" : filter} />
+
+          <input
+            type="search"
+            name="q"
+            defaultValue={query}
+            placeholder="Buscar por cliente, teléfono, evento, zona o decoración..."
+            className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+          />
+
+          <button
+            type="submit"
+            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          >
+            Buscar
+          </button>
+
+          {query && (
+            <Link
+              href={filter === "all" ? "/" : `/?filter=${filter}`}
+              className="rounded-md border border-slate-300 px-4 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Limpiar
+            </Link>
+          )}
+        </form>
+
         <div className="mb-4 flex flex-wrap gap-2">
           {filters.map((item) => {
-            const href = item.value === "all" ? "/" : `/?filter=${item.value}`;
+            const searchSuffix = query ? `&q=${encodeURIComponent(query)}` : "";
+            const href =
+              item.value === "all"
+                ? query
+                  ? `/?q=${encodeURIComponent(query)}`
+                  : "/"
+                : `/?filter=${item.value}${searchSuffix}`;
             const isActive = filter === item.value;
 
             return (
@@ -173,7 +227,7 @@ export default async function Home({ searchParams }: HomeProps) {
                       {lead.event_type ?? "-"}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-700">
-                      {lead.event_date ?? "-"}
+                      {formatDate(lead.event_date)}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-700">
                       {lead.event_zone ?? "-"}
@@ -182,7 +236,7 @@ export default async function Home({ searchParams }: HomeProps) {
                       {lead.decoration_type ?? "-"}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-700">
-                      {lead.quote_category ?? "-"}
+                      {formatQuoteCategory(lead.quote_category)}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <span
@@ -196,7 +250,7 @@ export default async function Home({ searchParams }: HomeProps) {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-700">
-                      {lead.status}
+                      {formatStatus(lead.status)}
                     </td>
                   </tr>
                 ))}

@@ -3,6 +3,14 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Lead } from "@/types/lead";
 import { updateLeadNotes, updateLeadStatus } from "./actions";
+import {
+  formatBoolean,
+  formatCurrency,
+  formatDate,
+  formatDecorationSize,
+  formatQuoteCategory,
+  formatStatus,
+} from "@/lib/formatters";
 
 interface LeadDetailPageProps {
   params: Promise<{
@@ -36,7 +44,7 @@ function DetailRow({
   value,
 }: {
   label: string;
-  value: string | number | boolean | null | undefined;
+  value: string | number | null | undefined;
 }) {
   return (
     <div className="border-b border-slate-200 py-3">
@@ -44,7 +52,7 @@ function DetailRow({
         {label}
       </dt>
       <dd className="mt-1 text-sm text-slate-900">
-        {typeof value === "boolean" ? (value ? "Sí" : "No") : value ?? "-"}
+        {value ?? "-"}
       </dd>
     </div>
   );
@@ -116,7 +124,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
               </span>
 
               <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
-                {lead.status}
+                {formatStatus(lead.status)}
               </span>
             </div>
           </div>
@@ -189,7 +197,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
               <DetailRow label="Teléfono" value={lead.customer_phone} />
               <DetailRow label="Canal" value={lead.channel} />
               <DetailRow label="Evento" value={lead.event_type} />
-              <DetailRow label="Fecha" value={lead.event_date} />
+              <DetailRow label="Fecha" value={formatDate(lead.event_date)} />
               <DetailRow
                 label="Días para el evento"
                 value={lead.days_until_event}
@@ -197,11 +205,11 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
               <DetailRow label="Zona" value={lead.event_zone} />
               <DetailRow label="Lugar" value={lead.event_place} />
               <DetailRow label="Decoración" value={lead.decoration_type} />
-              <DetailRow label="Tamaño" value={lead.decoration_size} />
+              <DetailRow label="Tamaño" value={formatDecorationSize(lead.decoration_size)} />
               <DetailRow label="Temática / colores" value={lead.theme_or_colors} />
-              <DetailRow label="Presupuesto" value={lead.budget} />
-              <DetailRow label="Categoría" value={lead.quote_category} />
-              <DetailRow label="Requiere traslado" value={lead.requires_transport} />
+              <DetailRow label="Presupuesto" value={formatCurrency(lead.budget)} />
+              <DetailRow label="Categoría" value={formatQuoteCategory(lead.quote_category)} />
+              <DetailRow label="Requiere traslado" value={formatBoolean(lead.requires_transport)} />
               <DetailRow label="Nota interna" value={lead.notes} />
             </dl>
           </section>
