@@ -43,3 +43,29 @@ export async function updateLeadStatus(formData: FormData) {
 
   redirect(`/prospectos/${leadId}`);
 }
+
+export async function updateLeadNotes(formData: FormData) {
+  const leadId = String(formData.get("leadId") ?? "");
+  const notes = String(formData.get("notes") ?? "");
+
+  if (!leadId) {
+    throw new Error("Missing leadId");
+  }
+
+  const { error } = await supabase
+    .from("leads")
+    .update({
+      notes,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", leadId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/prospectos/${leadId}`);
+
+  redirect(`/prospectos/${leadId}`);
+}

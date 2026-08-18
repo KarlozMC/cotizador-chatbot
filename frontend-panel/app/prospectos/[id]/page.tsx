@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Lead } from "@/types/lead";
-import { updateLeadStatus } from "./actions";
+import { updateLeadNotes, updateLeadStatus } from "./actions";
 
 interface LeadDetailPageProps {
   params: Promise<{
@@ -103,7 +103,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
                 Contactar por WhatsApp
               </a>
             )}
-            
+
             <div className="flex flex-wrap gap-2">
               <span
                 className={
@@ -154,6 +154,31 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
             </form>
           </section>
 
+          <section className="mb-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-base font-semibold text-slate-900">
+              Nota interna
+            </h2>
+
+            <form action={updateLeadNotes} className="mt-4">
+              <input type="hidden" name="leadId" value={lead.id} />
+
+              <textarea
+                name="notes"
+                defaultValue={lead.notes ?? ""}
+                rows={5}
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+                placeholder="Escribe notas de seguimiento para este prospecto..."
+              />
+
+              <button
+                type="submit"
+                className="mt-3 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+              >
+                Guardar nota
+              </button>
+            </form>
+          </section>
+
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-base font-semibold text-slate-900">
               Datos del evento
@@ -177,6 +202,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
               <DetailRow label="Presupuesto" value={lead.budget} />
               <DetailRow label="Categoría" value={lead.quote_category} />
               <DetailRow label="Requiere traslado" value={lead.requires_transport} />
+              <DetailRow label="Nota interna" value={lead.notes} />
             </dl>
           </section>
 

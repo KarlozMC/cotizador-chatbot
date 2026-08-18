@@ -18,4 +18,5 @@ export interface Lead {
   status: string;
   internal_summary: string | null;
   created_at: string;
+  notes: string | null;
 }
