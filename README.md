@@ -193,3 +193,10 @@ La guía de configuración de Meta, ngrok y WhatsApp Cloud API está en:
 
 ```text
 docs/meta-whatsapp-setup.md
+
+## Despliegue
+
+El plan inicial de despliegue está documentado en:
+
+```text
+docs/deployment-plan.md
