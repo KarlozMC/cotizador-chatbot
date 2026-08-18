@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import type { Lead } from "@/types/lead";
 import Link from "next/link";
 import {
@@ -8,7 +8,7 @@ import {
 } from "@/lib/formatters";
 
 async function getLeads(filter: string, searchQuery: string): Promise<Lead[]> {
-  let query = supabase
+  let query = supabaseAdmin
     .from("leads")
     .select("*")
     .order("created_at", { ascending: false });
@@ -43,7 +43,7 @@ async function getLeads(filter: string, searchQuery: string): Promise<Lead[]> {
 }
 
 async function getLeadStats() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("leads")
     .select("status, is_urgent");
 

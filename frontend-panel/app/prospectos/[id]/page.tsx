@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import type { Lead } from "@/types/lead";
 import { updateLeadNotes, updateLeadStatus } from "./actions";
 import {
@@ -19,7 +19,7 @@ interface LeadDetailPageProps {
 }
 
 async function getLead(id: string): Promise<Lead | null> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("leads")
     .select("*")
     .eq("id", id)

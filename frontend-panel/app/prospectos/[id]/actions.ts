@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 const validStatuses = [
   "nuevo",
@@ -26,7 +26,7 @@ export async function updateLeadStatus(formData: FormData) {
     throw new Error("Invalid status");
   }
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("leads")
     .update({
       status,
@@ -52,7 +52,7 @@ export async function updateLeadNotes(formData: FormData) {
     throw new Error("Missing leadId");
   }
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("leads")
     .update({
       notes,
