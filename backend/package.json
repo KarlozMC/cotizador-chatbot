@@ -13,7 +13,7 @@
     "scenario:fuera": "tsx src/simulator/runScenario.ts fuera_escobedo",
     "scenario:grande": "tsx src/simulator/runScenario.ts grande_personalizada",
     "build": "tsc",
-    "start": "node dist/simulator/index.js"
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
