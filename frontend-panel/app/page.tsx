@@ -25,6 +25,26 @@ async function getLeads(filter: string): Promise<Lead[]> {
   return data ?? [];
 }
 
+async function getLeadStats() {
+  const { data, error } = await supabase
+    .from("leads")
+    .select("status, is_urgent");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const leads = data ?? [];
+
+  return {
+    total: leads.length,
+    urgent: leads.filter((lead) => lead.is_urgent).length,
+    ready: leads.filter((lead) => lead.status === "listo_para_revision").length,
+    quoted: leads.filter((lead) => lead.status === "cotizado").length,
+    booked: leads.filter((lead) => lead.status === "apartado").length,
+  };
+}
+
 const filters = [
   { label: "Todos", value: "all" },
   { label: "Urgentes", value: "urgent" },
@@ -42,7 +62,10 @@ interface HomeProps {
 export default async function Home({ searchParams }: HomeProps) {
   const params = searchParams ? await searchParams : {};
   const filter = params.filter ?? "all";
-  const leads = await getLeads(filter);
+  const [leads, stats] = await Promise.all([
+    getLeads(filter),
+    getLeadStats(),
+  ]);
 
   return (
     <main className="min-h-screen bg-slate-100 px-6 py-8">
@@ -54,6 +77,35 @@ export default async function Home({ searchParams }: HomeProps) {
           <p className="mt-1 text-sm text-slate-600">
             Solicitudes capturadas por el chatbot para revisión y seguimiento.
           </p>
+        </div>
+
+        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-xs font-medium uppercase text-slate-500">Total</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">{stats.total}</p>
+          </div>
+
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 shadow-sm">
+            <p className="text-xs font-medium uppercase text-red-600">Urgentes</p>
+            <p className="mt-2 text-2xl font-semibold text-red-700">{stats.urgent}</p>
+          </div>
+
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 shadow-sm">
+            <p className="text-xs font-medium uppercase text-blue-600">
+              Listos para revisión
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-blue-700">{stats.ready}</p>
+          </div>
+
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm">
+            <p className="text-xs font-medium uppercase text-amber-700">Cotizados</p>
+            <p className="mt-2 text-2xl font-semibold text-amber-700">{stats.quoted}</p>
+          </div>
+
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
+            <p className="text-xs font-medium uppercase text-emerald-700">Apartados</p>
+            <p className="mt-2 text-2xl font-semibold text-emerald-700">{stats.booked}</p>
+          </div>
         </div>
 
         <div className="mb-4 flex flex-wrap gap-2">
