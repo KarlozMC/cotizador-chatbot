@@ -11,6 +11,7 @@ import {
   formatQuoteCategory,
   formatStatus,
 } from "@/lib/formatters";
+import { logout } from "@/app/actions";
 
 interface LeadDetailPageProps {
   params: Promise<{
@@ -84,12 +85,23 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
     <main className="min-h-screen bg-slate-100 px-6 py-8">
       <section className="mx-auto max-w-5xl">
         <div className="mb-6">
-          <Link
-            href="/"
-            className="text-sm font-medium text-slate-600 hover:text-slate-900"
-          >
-            ← Volver a prospectos
-          </Link>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Link
+              href="/"
+              className="text-sm font-medium text-slate-600 hover:text-slate-900"
+            >
+              ← Volver a prospectos
+            </Link>
+
+            <form action={logout}>
+              <button
+                type="submit"
+                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Salir
+              </button>
+            </form>
+          </div>
 
           <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
             <div>

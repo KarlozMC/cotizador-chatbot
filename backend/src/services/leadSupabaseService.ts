@@ -11,8 +11,8 @@ export async function saveLeadToSupabase(lead: LeadDraft): Promise<string> {
     .insert({
       business_id: businessId,
       channel: lead.channel ?? "manual",
-      customer_phone: lead.customerPhone,
       customer_name: lead.customerName,
+      customer_phone: lead.customerPhone,
       event_type: lead.eventType,
       event_date: normalizeEventDate(lead.eventDate),
       event_zone: lead.eventZone,

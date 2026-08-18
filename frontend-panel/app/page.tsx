@@ -6,6 +6,7 @@ import {
   formatQuoteCategory,
   formatStatus,
 } from "@/lib/formatters";
+import { logout } from "./actions";
 
 async function getLeads(filter: string, searchQuery: string): Promise<Lead[]> {
   let query = supabaseAdmin
@@ -90,13 +91,24 @@ export default async function Home({ searchParams }: HomeProps) {
   return (
     <main className="min-h-screen bg-slate-100 px-6 py-8">
       <section className="mx-auto max-w-7xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Prospectos VA Decoraciones
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Solicitudes capturadas por el chatbot para revisión y seguimiento.
-          </p>
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900">
+              Prospectos VA Decoraciones
+            </h1>
+            <p className="mt-1 text-sm text-slate-600">
+              Solicitudes capturadas por el chatbot para revisión y seguimiento.
+            </p>
+          </div>
+
+          <form action={logout}>
+            <button
+              type="submit"
+              className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Salir
+            </button>
+          </form>
         </div>
 
         <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
