@@ -53,6 +53,7 @@ jobs:
         with:
           name: frontend-panel
           path: frontend-panel/deploy
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
