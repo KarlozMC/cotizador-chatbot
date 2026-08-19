@@ -38,3 +38,28 @@ export function extractWhatsappMessages(payload: unknown): Array<{
       text: String(message.text.body),
     }));
 }
+
+export function extractWhatsappStatuses(payload: unknown): Array<{
+  messageId: string;
+  status: string;
+  timestamp?: string;
+  recipientId?: string;
+  errors?: unknown;
+}> {
+  const body = payload as any;
+
+  const value = body?.entry?.[0]?.changes?.[0]?.value;
+  const statuses = value?.statuses;
+
+  if (!Array.isArray(statuses)) {
+    return [];
+  }
+
+  return statuses.map((status) => ({
+    messageId: String(status.id),
+    status: String(status.status),
+    timestamp: status.timestamp ? String(status.timestamp) : undefined,
+    recipientId: status.recipient_id ? String(status.recipient_id) : undefined,
+    errors: status.errors,
+  }));
+}

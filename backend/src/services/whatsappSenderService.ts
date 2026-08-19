@@ -40,8 +40,15 @@ export async function sendWhatsappTextMessage(params: {
     throw new Error(`Error sending WhatsApp message: ${JSON.stringify(responseBody)}`);
   }
 
-  console.log("Respuesta enviada por WhatsApp:", {
-    to: params.to,
-    response: responseBody,
-  });
+  console.log(
+    "Respuesta enviada por WhatsApp:",
+    JSON.stringify(
+      {
+        to: params.to,
+        response: responseBody,
+      },
+      null,
+      2
+    )
+  );
 }

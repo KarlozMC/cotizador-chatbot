@@ -1,7 +1,11 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { extractWhatsappMessages, verifyWhatsappWebhook, } from "./services/whatsappWebhookService.js";
+import {
+  extractWhatsappMessages,
+  extractWhatsappStatuses,
+  verifyWhatsappWebhook,
+} from "./services/whatsappWebhookService.js";
 import { processIncomingMessage } from "./services/chatSessionService.js";
 import { sendWhatsappTextMessage } from "./services/whatsappSenderService.js";
 
@@ -69,6 +73,12 @@ app.get("/webhooks/whatsapp", (req, res) => {
 app.post("/webhooks/whatsapp", async (req, res) => {
   try {
     const messages = extractWhatsappMessages(req.body);
+
+    const statuses = extractWhatsappStatuses(req.body);
+
+    for (const status of statuses) {
+      console.log("Estatus WhatsApp recibido:", status);
+    }
 
     for (const message of messages) {
       const result = await processIncomingMessage({
