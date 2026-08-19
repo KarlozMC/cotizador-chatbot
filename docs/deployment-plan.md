@@ -1,16 +1,17 @@
 # Plan De Despliegue - Cotizador Chatbot
 
-Este documento concentra el estado actual del despliegue del proyecto `cotizador-chatbot`, las configuraciones necesarias y los siguientes pasos recomendados para dejar operativa una primera version profesional del chatbot y panel administrativo de VA Decoraciones.
+Este documento concentra el estado actual del despliegue del proyecto `cotizador-chatbot`, las configuraciones necesarias, los errores resueltos y los siguientes pasos recomendados para mantener operativa una primera version profesional del chatbot y panel administrativo de VA Decoraciones.
 
 ## 1. Objetivo Del Despliegue
 
-Publicar el chatbot de VA Decoraciones en una URL estable para que pueda:
+Publicar el chatbot de VA Decoraciones en URLs estables para que pueda:
 
 - Recibir mensajes desde WhatsApp Cloud API.
 - Procesar conversaciones automaticamente.
 - Guardar prospectos, mensajes y conversaciones en Supabase.
 - Responder por WhatsApp.
 - Consultar prospectos desde un panel administrativo.
+- Cambiar estados y registrar notas internas desde el panel.
 
 ## 2. Componentes Del Proyecto
 
@@ -87,6 +88,7 @@ Estado actual:
 Estado actual:
 
 - Panel local funcional.
+- Panel desplegado en Azure App Service.
 - Login simple funcionando.
 - Listado de prospectos funcionando.
 - Busqueda y filtros funcionando.
@@ -95,7 +97,7 @@ Estado actual:
 - Notas internas funcionando.
 - Boton de contacto por WhatsApp funcionando.
 - Logout funcionando.
-- Pendiente desplegar panel en Azure.
+- Interacciones del panel validadas en produccion.
 
 ## 4. Backend Desplegado En Azure
 
@@ -126,7 +128,39 @@ Webhook de WhatsApp:
 https://cotizador-chatbot-backend-ddhgcchkcheadrff.canadacentral-01.azurewebsites.net/webhooks/whatsapp
 ```
 
-## 5. Configuracion De Meta / WhatsApp
+## 5. Frontend Panel Desplegado En Azure
+
+El panel administrativo quedo desplegado en Azure App Service.
+
+URL base:
+
+```text
+https://cotizador-chatbot-panel-f0fcfya7ajbsb2bx.canadacentral-01.azurewebsites.net
+```
+
+Comando de inicio en Azure App Service:
+
+```bash
+npm start
+```
+
+Runtime recomendado:
+
+```text
+Node - 22 LTS
+```
+
+Script requerido en `frontend-panel/package.json`:
+
+```json
+{
+  "scripts": {
+    "start": "next start"
+  }
+}
+```
+
+## 6. Configuracion De Meta / WhatsApp
 
 Configuracion actual:
 
@@ -134,7 +168,7 @@ Configuracion actual:
 - Business Portfolio: `VA Decoraciones`
 - Producto configurado: `Whatsapp Business Account`
 - Webhook configurado contra Azure.
-- Campo suscrito: `messages`
+- Campo suscrito: `messages`.
 - Numero de prueba autorizado.
 - Respuesta por WhatsApp validada.
 
@@ -158,7 +192,7 @@ Validacion realizada:
 - El backend envio respuesta.
 - La respuesta llego correctamente a WhatsApp.
 
-## 6. Variables De Entorno Del Backend
+## 7. Variables De Entorno Del Backend
 
 Estas variables deben configurarse en Azure App Service, dentro de:
 
@@ -181,20 +215,26 @@ WHATSAPP_API_VERSION=v26.0
 
 Notas:
 
-- `SUPABASE_SERVICE_ROLE_KEY` no debe exponerse en frontend.
+- `SUPABASE_SERVICE_ROLE_KEY` no debe exponerse en frontend cliente.
 - `WHATSAPP_ACCESS_TOKEN` puede expirar si es temporal.
 - Si WhatsApp deja de enviar respuestas y aparece error `OAuthException` o codigo `190`, se debe renovar el token y actualizarlo en Azure.
 - Despues de cambiar variables en Azure, reiniciar el App Service.
 
-## 7. Variables De Entorno Del Frontend
+## 8. Variables De Entorno Del Frontend
 
-Estas variables se usaran al desplegar `frontend-panel`.
+Estas variables deben existir en dos lugares:
+
+- Azure App Service del panel.
+- GitHub Actions como Repository Secrets.
+
+Variables necesarias:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 PANEL_ACCESS_KEY=
+NODE_ENV=production
 ```
 
 Notas:
@@ -203,8 +243,9 @@ Notas:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` puede usarse del lado cliente si se requiere.
 - `SUPABASE_SERVICE_ROLE_KEY` solo debe usarse del lado servidor.
 - `PANEL_ACCESS_KEY` es la clave temporal para entrar al panel.
+- En GitHub deben estar en `Settings > Secrets and variables > Actions > Secrets`, no en `Variables`.
 
-## 8. Comandos Locales
+## 9. Comandos Locales
 
 ### Backend
 
@@ -264,9 +305,15 @@ Compilar:
 npm run build
 ```
 
-## 9. GitHub Actions Para Backend
+Ejecutar compilado:
 
-El backend ya fue desplegado desde GitHub Actions hacia Azure App Service.
+```bash
+npm start
+```
+
+## 10. GitHub Actions Para Backend
+
+El backend fue desplegado desde GitHub Actions hacia Azure App Service.
 
 Punto clave corregido:
 
@@ -285,15 +332,69 @@ El artifact de despliegue debe salir desde:
 backend/
 ```
 
-## 10. Logs En Azure
+## 11. GitHub Actions Para Frontend Panel
 
-Para revisar actividad del backend:
+El panel se despliega desde GitHub Actions hacia Azure App Service.
+
+Puntos clave corregidos:
+
+- El workflow debe compilar desde `frontend-panel`.
+- Las variables de Supabase deben existir como GitHub Secrets para que `next build` pueda ejecutarse.
+- El artifact debe incluir la carpeta `.next`.
+- Como `.next` es una carpeta oculta, `actions/upload-artifact@v4` debe usar `include-hidden-files: true`.
+
+Ejemplo de configuracion relevante:
+
+```yaml
+- name: Build frontend panel
+  env:
+    NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+    SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    PANEL_ACCESS_KEY: ${{ secrets.PANEL_ACCESS_KEY }}
+  run: npm run build
+```
+
+Preparacion correcta del artifact:
+
+```yaml
+- name: Prepare artifact for deployment
+  run: |
+    mkdir deploy
+    cp -r .next deploy/.next
+    cp -r public deploy/public
+    cp package.json deploy/package.json
+    cp package-lock.json deploy/package-lock.json
+    cp next.config.ts deploy/next.config.ts
+```
+
+Upload correcto del artifact:
+
+```yaml
+- name: Upload artifact for deployment job
+  uses: actions/upload-artifact@v4
+  with:
+    name: frontend-panel
+    path: frontend-panel/deploy
+    include-hidden-files: true
+```
+
+Error que resuelve esta configuracion:
+
+```text
+Could not find a production build in the '.next' directory.
+Try building your app with 'next build' before starting the production server.
+```
+
+## 12. Logs En Azure
+
+Para revisar actividad del backend o panel:
 
 ```text
 Azure App Service > Supervision > Secuencia de registro
 ```
 
-Logs esperados cuando llega un mensaje:
+Logs esperados cuando llega un mensaje al backend:
 
 ```text
 Mensaje WhatsApp procesado
@@ -316,7 +417,15 @@ Accion recomendada:
 4. Reiniciar el App Service.
 5. Probar de nuevo enviando primero un mensaje desde WhatsApp.
 
-## 11. Application Insights
+Si el panel muestra `503 Service Unavailable`, revisar:
+
+- Que el App Service este iniciado.
+- Que el runtime sea Node 22 LTS.
+- Que el comando de inicio sea `npm start`.
+- Que el artifact desplegado incluya `.next`.
+- Que existan variables de entorno del panel en Azure.
+
+## 13. Application Insights
 
 Application Insights no es obligatorio para validar el MVP.
 
@@ -334,38 +443,26 @@ Application Insights se puede activar mas adelante cuando se quiera:
 - Metricas historicas.
 - Diagnostico profesional para produccion.
 
-## 12. Opciones De Hosting
+## 14. Hosting Elegido
 
-### Opcion Recomendada Actual
+Configuracion actual:
 
 ```text
 Backend: Azure App Service
-Frontend: Azure Static Web Apps o Azure App Service
+Frontend: Azure App Service
 Base de datos: Supabase
+WhatsApp: Meta WhatsApp Cloud API
 ```
 
-Esta opcion es la mas alineada con el objetivo actual porque:
+Esta opcion quedo elegida porque:
 
-- Ya se logro desplegar el backend en Azure.
+- El backend ya estaba funcionando correctamente en Azure.
 - Azure da URL publica HTTPS estable.
-- Es buen entrenamiento para proyectos profesionales.
-- Permite crecer despues hacia dominios, monitoreo y ambientes separados.
+- El panel usa Next.js con comportamiento server-side, cookies y rutas dinamicas.
+- Azure Static Web Apps presento problemas de warm up con Next.js.
+- Azure App Service resulto mas compatible para el panel.
 
-### Alternativa Para Frontend
-
-Primera opcion:
-
-```text
-Azure Static Web Apps
-```
-
-Alternativa si hay problemas con Next.js, server actions o cookies:
-
-```text
-Azure App Service
-```
-
-## 13. Checklist Backend
+## 15. Checklist Backend
 
 - [x] Backend corre localmente.
 - [x] Backend compila.
@@ -383,7 +480,7 @@ Azure App Service
 - [x] Respuesta enviada por WhatsApp.
 - [x] Respuesta recibida en WhatsApp.
 
-## 14. Checklist Frontend
+## 16. Checklist Frontend
 
 - [x] Frontend corre localmente.
 - [x] Frontend compila.
@@ -394,15 +491,93 @@ Azure App Service
 - [x] Notas internas funcionales.
 - [x] Contacto por WhatsApp funcional.
 - [x] Logout funcional.
-- [ ] Desplegar `frontend-panel` en Azure.
-- [ ] Configurar variables de entorno del frontend en Azure.
-- [ ] Validar login desde URL publica.
-- [ ] Validar listado de prospectos desde URL publica.
-- [ ] Validar detalle de prospecto desde URL publica.
-- [ ] Validar cambio de estado desde URL publica.
-- [ ] Validar notas internas desde URL publica.
+- [x] Azure App Service creado para el panel.
+- [x] Variables de entorno configuradas en Azure.
+- [x] GitHub Secrets configurados para build.
+- [x] Workflow ajustado para `frontend-panel`.
+- [x] Artifact corregido para incluir `.next`.
+- [x] Panel desplegado en Azure.
+- [x] Login validado desde URL publica.
+- [x] Interacciones del panel validadas desde URL publica.
 
-## 15. Seguridad Pendiente
+## 17. Errores Resueltos
+
+### Error: Missing NEXT_PUBLIC_SUPABASE_URL
+
+Mensaje:
+
+```text
+Missing NEXT_PUBLIC_SUPABASE_URL
+```
+
+Causa:
+
+- GitHub Actions compilaba el frontend sin los secrets requeridos.
+
+Solucion:
+
+- Crear secrets en GitHub Actions.
+- Pasarlos al paso de build mediante `env`.
+
+### Error: Artifact Not Found
+
+Mensaje:
+
+```text
+Artifact not found for name: frontend-panel
+```
+
+Causa:
+
+- El workflow intentaba descargar un artifact que no se habia creado correctamente.
+
+Solucion:
+
+- Crear la carpeta `deploy`.
+- Subirla con el nombre `frontend-panel`.
+- Descargar el mismo nombre en el job de deploy.
+
+### Error: Could Not Find Production Build
+
+Mensaje:
+
+```text
+Could not find a production build in the '.next' directory
+```
+
+Causa:
+
+- El artifact no incluia la carpeta `.next`.
+- `actions/upload-artifact@v4` puede omitir archivos y carpetas ocultas si no se indica lo contrario.
+
+Solucion:
+
+- Agregar `include-hidden-files: true` al paso de upload del artifact.
+
+### Error: 503 Service Unavailable
+
+Mensaje:
+
+```text
+503 Service Unavailable
+504 GatewayTimeout
+```
+
+Causas revisadas:
+
+- App Service iniciado pero sin build `.next`.
+- Posible cuota temporal del plan gratuito.
+- Runtime Node no consistente.
+- Comando de inicio pendiente de ajustar.
+
+Solucion aplicada:
+
+- Runtime ajustado a Node 22 LTS.
+- Comando de inicio ajustado a `npm start`.
+- Artifact corregido para incluir `.next`.
+- Panel validado despues del despliegue correcto.
+
+## 18. Seguridad Pendiente
 
 Pendientes antes de una version mas formal:
 
@@ -416,7 +591,7 @@ Pendientes antes de una version mas formal:
 - No publicar tokens en capturas ni documentos.
 - Reducir logs sensibles antes de trabajar con clientes reales.
 
-## 16. Recomendacion Sobre Numero De WhatsApp
+## 19. Recomendacion Sobre Numero De WhatsApp
 
 Para este momento no se recomienda migrar el numero personal o principal de VA Decoraciones.
 
@@ -427,7 +602,7 @@ Recomendacion:
 - Ese numero debe ser exclusivo para WhatsApp Cloud API.
 - Evitar desconectar el WhatsApp principal mientras el flujo sigue en pruebas.
 
-## 17. Notas Operativas
+## 20. Notas Operativas
 
 - Ngrok ya no es necesario como webhook principal porque el backend tiene URL estable en Azure.
 - Ngrok puede seguir sirviendo para pruebas locales rapidas.
@@ -435,21 +610,26 @@ Recomendacion:
 - Si se cambia el token de verificacion, hay que volver a verificar el webhook.
 - Si no llegan respuestas a WhatsApp pero el log dice que Meta acepto el envio, probar iniciar conversacion desde WhatsApp primero.
 - Si el backend guarda en Supabase pero WhatsApp no responde, revisar token, ventana de conversacion y numero autorizado.
+- En plan gratuito de Azure pueden aparecer limites temporales de cuota.
+- Si Azure marca `Se ha excedido la cuota`, esperar un tiempo o considerar subir a un plan basico usando creditos gratuitos.
 
-## 18. Proximo Hito
+## 21. Proximo Hito
 
-Desplegar el `frontend-panel` en Azure para tener una URL publica del panel administrativo.
+Preparar una demo controlada de punta a punta.
 
 Objetivo del siguiente hito:
 
-- Publicar panel administrativo.
-- Configurar variables de entorno.
-- Entrar con `PANEL_ACCESS_KEY`.
-- Ver leads reales creados desde WhatsApp.
-- Cambiar estado y guardar notas desde la URL publica.
+- Enviar mensaje desde WhatsApp.
+- Completar flujo de cotizacion.
+- Confirmar que el prospecto se guarda en Supabase.
+- Entrar al panel publico.
+- Ver el prospecto nuevo.
+- Cambiar estado.
+- Guardar nota interna.
+- Abrir contacto por WhatsApp desde el panel.
 
 Commit sugerido:
 
 ```text
-Document Azure backend deployment
+Document completed Azure frontend and backend deployment
 ```
