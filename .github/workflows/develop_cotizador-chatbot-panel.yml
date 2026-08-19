@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - cotizador-chatbot-panel
+name: Build and deploy Next.js panel to Azure Web App - cotizador-chatbot-panel
 
 on:
   push:
@@ -18,27 +18,35 @@ jobs:
         working-directory: frontend-panel
 
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22.x'
 
-      - name: npm install, build, and test
-        working-directory: frontend-panel
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build frontend panel
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           PANEL_ACCESS_KEY: ${{ secrets.PANEL_ACCESS_KEY }}
+        run: npm run build
+
+      - name: Prepare artifact for deployment
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+          mkdir deploy
+          cp -r .next deploy/.next
+          cp -r public deploy/public
+          cp package.json deploy/package.json
+          cp package-lock.json deploy/package-lock.json
+          cp next.config.ts deploy/next.config.ts
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -49,9 +57,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -59,7 +68,7 @@ jobs:
         with:
           name: frontend-panel
           path: frontend-panel
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -67,11 +76,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4B44D3C71AD64C2AAE960B3BD28C7080 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7AE0DF1197C34A8FA9E754E113EB8E1E }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'cotizador-chatbot-panel'
-          slot-name: 'Production'
+          app-name: cotizador-chatbot-panel
+          slot-name: Production
           package: frontend-panel
-          
