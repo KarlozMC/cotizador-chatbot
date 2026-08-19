@@ -34,8 +34,14 @@ export async function sendWhatsappTextMessage(params: {
     }),
   });
 
+  const responseBody = await response.json();
+
   if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Error sending WhatsApp message: ${errorBody}`);
+    throw new Error(`Error sending WhatsApp message: ${JSON.stringify(responseBody)}`);
   }
+
+  console.log("Respuesta enviada por WhatsApp:", {
+    to: params.to,
+    response: responseBody,
+  });
 }
